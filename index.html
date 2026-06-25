@@ -37,7 +37,10 @@
                         <h2 class="fw-bold mb-1"><span id="profileName" class="text-gradient">Yükleniyor...</span> <span id="profileSurname"></span></h2>
                         <p class="text-muted small mb-4" id="profileBio">Lütfen bekleyin, veriler çekiliyor...</p>
                         
-                        <div class="social-links d-flex justify-content-center gap-3" id="socialContainer">
+                        <!-- Sosyal Linkler Düzenle Butonu (Admin) -->
+                        <button class="btn btn-sm btn-warning admin-only d-none mt-2" id="editSocialsBtn" title="Sosyal Medyayı Düzenle"><i class="fas fa-edit"></i> Linkleri Düzenle</button>
+                        
+                        <div class="social-links d-flex justify-content-center gap-3 mt-3" id="socialContainer">
                             <!-- Sosyal medya ikonları -->
                         </div>
                     </div>
@@ -122,6 +125,39 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success w-100" id="saveProfileBtn">Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Socials Modal -->
+    <div class="modal fade" id="editSocialsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sosyal Medya Linklerini Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fab fa-linkedin text-primary"></i> LinkedIn Linki</label>
+                        <input type="text" id="editSocialLinkedin" class="form-control" placeholder="https://linkedin.com/in/...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fab fa-github text-dark"></i> GitHub Linki</label>
+                        <input type="text" id="editSocialGithub" class="form-control" placeholder="https://github.com/...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fab fa-kaggle text-info"></i> Kaggle Linki</label>
+                        <input type="text" id="editSocialKaggle" class="form-control" placeholder="https://kaggle.com/...">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fab fa-youtube text-danger"></i> YouTube Linki</label>
+                        <input type="text" id="editSocialYoutube" class="form-control" placeholder="https://youtube.com/...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success w-100" id="saveSocialsBtn">Kaydet</button>
                 </div>
             </div>
         </div>
