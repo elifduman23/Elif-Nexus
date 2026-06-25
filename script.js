@@ -303,8 +303,25 @@ $(document).ready(function() {
     function addProjectForm(proj) {
         const title = proj ? proj.title : '';
         const desc = proj ? proj.description : '';
-        const tags = proj && proj.tags ? proj.tags.join(', ') : '';
         const link = proj && proj.link !== '#' ? proj.link : '';
+        
+        const commonLangs = ["HTML", "CSS", "JavaScript", "TypeScript", "Python", "C#", "SQL", "Java", "C++", "PHP", "Swift", "Go", "Kotlin", "Ruby", "Rust", "Dart", "React", "Node.js", "Firebase", "MongoDB"];
+        const currentTags = proj && proj.tags ? proj.tags : [];
+        
+        let checkboxesHtml = '<div class="d-flex flex-wrap gap-2 border p-2 rounded bg-white" style="max-height: 120px; overflow-y: auto;">';
+        commonLangs.forEach(lang => {
+            const isChecked = currentTags.includes(lang) ? 'checked' : '';
+            const uniqueId = `cb_${lang.replace(/\W/g, '')}_${Math.random().toString(36).substr(2, 9)}`;
+            checkboxesHtml += `
+                <div class="form-check form-check-inline m-0">
+                    <input class="form-check-input proj-lang-checkbox" type="checkbox" value="${lang}" id="${uniqueId}" ${isChecked}>
+                    <label class="form-check-label small" style="cursor:pointer;" for="${uniqueId}">${lang}</label>
+                </div>
+            `;
+        });
+        checkboxesHtml += '</div>';
+
+        const otherTags = currentTags.filter(t => !commonLangs.includes(t)).join(', ');
         
         const formHtml = `
             <div class="project-edit-item border rounded p-3 mb-3 position-relative bg-light shadow-sm">
@@ -318,8 +335,12 @@ $(document).ready(function() {
                     <textarea class="form-control form-control-sm proj-desc" rows="2" placeholder="Proje detayları...">${desc}</textarea>
                 </div>
                 <div class="mb-2">
-                    <label class="form-label small fw-bold mb-1">Etiketler (Virgülle ayırın)</label>
-                    <input type="text" class="form-control form-control-sm proj-tags" value="${tags}" placeholder="Örn: HTML, CSS, JavaScript">
+                    <label class="form-label small fw-bold mb-1">Kullanılan Teknolojiler / Diller</label>
+                    ${checkboxesHtml}
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold mb-1">Ekstra Etiketler (Listede olmayanlar, virgülle ayırın)</label>
+                    <input type="text" class="form-control form-control-sm proj-tags-other" value="${otherTags}" placeholder="Örn: Bootstrap, Figma">
                 </div>
                 <div class="mb-2">
                     <label class="form-label small fw-bold mb-1">Proje Linki</label>
@@ -349,12 +370,20 @@ $(document).ready(function() {
         $('.project-edit-item').each(function() {
             const title = $(this).find('.proj-title').val().trim();
             const desc = $(this).find('.proj-desc').val().trim();
-            const tagsInput = $(this).find('.proj-tags').val().trim();
             const link = $(this).find('.proj-link').val().trim();
             
             // Sadece başlığı olanları projeler listesine dahil et (Boşları geç)
             if (title !== '') {
-                const tagsArray = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t !== '') : [];
+                const selectedLangs = [];
+                $(this).find('.proj-lang-checkbox:checked').each(function() {
+                    selectedLangs.push($(this).val());
+                });
+
+                const otherTagsInput = $(this).find('.proj-tags-other').val().trim();
+                const otherTagsArray = otherTagsInput ? otherTagsInput.split(',').map(t => t.trim()).filter(t => t !== '') : [];
+
+                const tagsArray = [...new Set([...selectedLangs, ...otherTagsArray])];
+
                 newProjects.push({
                     title: title,
                     description: desc,
