@@ -35,7 +35,7 @@
                             <img src="https://via.placeholder.com/200" alt="Profil Fotoğrafı" id="profileImage" class="img-fluid rounded-circle profile-img shadow">
                         </div>
                         <h2 class="fw-bold mb-1"><span id="profileName" class="text-gradient">Yükleniyor...</span> <span id="profileSurname"></span></h2>
-                        <p class="text-muted small mb-4" id="profileBio">Lütfen bekleyin, veriler çekiliyor...</p>
+                        <p class="mb-4" id="profileBio" style="white-space: pre-wrap; color: #cbd5e1; font-size: 1rem; line-height: 1.6;">Lütfen bekleyin, veriler çekiliyor...</p>
                         
                         <!-- Sosyal Linkler Düzenle Butonu (Admin) -->
                         <button class="btn btn-sm btn-warning admin-only d-none mt-2" id="editSocialsBtn" title="Sosyal Medyayı Düzenle"><i class="fas fa-edit"></i> Linkleri Düzenle</button>
@@ -115,8 +115,12 @@
                         <input type="text" id="editSurname" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Fotoğraf Linki (URL)</label>
-                        <input type="text" id="editPhoto" class="form-control">
+                        <label class="form-label">Profil Fotoğrafı Seç</label>
+                        <input type="file" id="editPhotoFile" accept="image/*" class="form-control">
+                        <input type="hidden" id="currentPhotoUrl">
+                        <div class="mt-2 text-center">
+                            <img id="photoPreview" src="" alt="Önizleme" style="max-width: 100px; max-height: 100px; display: none; border-radius: 50%; object-fit: cover;">
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Biyografi</label>

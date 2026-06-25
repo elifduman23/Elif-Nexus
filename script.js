@@ -35,7 +35,14 @@ $(document).ready(function() {
         if (data.profile) {
             $('#profileName').text(data.profile.name);
             $('#profileSurname').text(data.profile.surname);
-            $('#profileBio').text(data.profile.bio);
+            
+            if(data.profile.bio) {
+                // Alt satıra geçmeleri korumak için \n karakterlerini <br>'ye çeviriyoruz
+                $('#profileBio').html(data.profile.bio.replace(/\n/g, '<br>'));
+            } else {
+                $('#profileBio').text('');
+            }
+            
             $('#profileImage').attr('src', data.profile.photoUrl || 'https://via.placeholder.com/200');
         }
 
@@ -157,25 +164,76 @@ $(document).ready(function() {
             if (profile) {
                 $('#editName').val(profile.name);
                 $('#editSurname').val(profile.surname);
-                $('#editPhoto').val(profile.photoUrl);
+                $('#currentPhotoUrl').val(profile.photoUrl || '');
+                $('#editPhotoFile').val(''); // Dosya seçimini sıfırla
+                
+                if (profile.photoUrl) {
+                    $('#photoPreview').attr('src', profile.photoUrl).show();
+                } else {
+                    $('#photoPreview').hide();
+                }
+                
                 $('#editBio').val(profile.bio);
             }
             $('#editProfileModal').modal('show');
         });
     });
 
+    // Fotoğraf seçildiğinde önizleme yap
+    $('#editPhotoFile').change(function(e) {
+        if (e.target.files && e.target.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#photoPreview').attr('src', e.target.result).show();
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+
     // Profili Kaydet Butonuna Tıklayınca
     $('#saveProfileBtn').click(function() {
-        const newProfile = {
-            name: $('#editName').val(),
-            surname: $('#editSurname').val(),
-            photoUrl: $('#editPhoto').val(),
-            bio: $('#editBio').val()
+        const fileInput = document.getElementById('editPhotoFile');
+        const file = fileInput.files[0];
+        const saveProfileBtn = $(this);
+        
+        saveProfileBtn.prop('disabled', true).text('Kaydediliyor...');
+
+        const updateDatabase = (photoUrl) => {
+            const newProfile = {
+                name: $('#editName').val(),
+                surname: $('#editSurname').val(),
+                photoUrl: photoUrl || null,
+                bio: $('#editBio').val()
+            };
+
+            db.ref('portfolio/profile').update(newProfile).then(() => {
+                $('#editProfileModal').modal('hide');
+                saveProfileBtn.prop('disabled', false).text('Kaydet');
+            }).catch((error) => {
+                console.error("Güncelleme hatası: ", error);
+                alert("Güncelleme başarısız oldu!");
+                saveProfileBtn.prop('disabled', false).text('Kaydet');
+            });
         };
 
-        db.ref('portfolio/profile').update(newProfile).then(() => {
-            $('#editProfileModal').modal('hide');
-        });
+        if (file) {
+            // Firebase Storage ücretli (Blaze) plan istediği için, alternatifi kullanıyoruz:
+            // Fotoğrafı Base64 metin formatına çevirip doğrudan Realtime Database'e kaydediyoruz!
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                const base64String = e.target.result;
+                updateDatabase(base64String);
+            };
+            reader.onerror = function(error) {
+                console.error("Dosya okuma hatası:", error);
+                alert("Fotoğraf okunamadı!");
+                saveProfileBtn.prop('disabled', false).text('Kaydet');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // Dosya seçilmemişse mevcut fotoğraf url'si ile güncelle
+            updateDatabase($('#currentPhotoUrl').val());
+        }
     });
 
     // Sosyal Linkleri Düzenle Butonuna Tıklayınca
