@@ -44,6 +44,14 @@ $(document).ready(function() {
             }
             
             $('#profileImage').attr('src', data.profile.photoUrl || 'https://via.placeholder.com/200');
+            
+            if (data.profile.email) {
+                $('#profileEmailText').text(data.profile.email);
+                $('#profileEmailLink').attr('href', 'mailto:' + data.profile.email);
+                $('.contact-card').fadeIn();
+            } else {
+                $('.contact-card').hide();
+            }
         }
 
         // Sosyal Linkler
@@ -174,6 +182,7 @@ $(document).ready(function() {
                 }
                 
                 $('#editBio').val(profile.bio);
+                $('#editEmail').val(profile.email || '');
             }
             $('#editProfileModal').modal('show');
         });
@@ -203,7 +212,8 @@ $(document).ready(function() {
                 name: $('#editName').val(),
                 surname: $('#editSurname').val(),
                 photoUrl: photoUrl || null,
-                bio: $('#editBio').val()
+                bio: $('#editBio').val(),
+                email: $('#editEmail').val()
             };
 
             db.ref('portfolio/profile').update(newProfile).then(() => {

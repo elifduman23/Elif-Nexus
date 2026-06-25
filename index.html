@@ -44,6 +44,15 @@
                             <!-- Sosyal medya ikonları -->
                         </div>
                     </div>
+                    
+                    <!-- İletişim / Geri Bildirim Kartı -->
+                    <div class="contact-card mt-4 p-3 text-center glass-effect position-relative" style="display:none;">
+                        <h5 class="fw-bold mb-2 text-white">İletişim & Geri Bildirim</h5>
+                        <p class="small mb-2" style="color: #cbd5e1;">Bana buradan ulaşabilirsiniz:</p>
+                        <a href="#" id="profileEmailLink" class="text-decoration-none fw-bold text-gradient fs-5">
+                            <i class="fas fa-envelope me-2"></i><span id="profileEmailText">Yükleniyor...</span>
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Sol/Orta Kısım: Projeler -->
@@ -125,6 +134,10 @@
                     <div class="mb-3">
                         <label class="form-label">Biyografi</label>
                         <textarea id="editBio" class="form-control" rows="4"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">İletişim (E-posta)</label>
+                        <input type="email" id="editEmail" class="form-control" placeholder="ornek@mail.com">
                     </div>
                 </div>
                 <div class="modal-footer">
