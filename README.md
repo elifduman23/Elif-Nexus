@@ -1,5 +1,5 @@
 # Elif Nexus - Dynamic Portfolio CMS 🚀
-![Elif Nexus](https://img.shields.io/badge/Status-Active-success) ![Version](https://img.shields.io/badge/Version-1.0.0-blue) ![License](https://img.shields.io/badge/License-MIT-green)
+
 Elif Nexus is a highly dynamic, serverless Personal Portfolio and Content Management System (CMS) built with pure HTML, CSS, JavaScript, and Firebase. It allows you to update your entire portfolio in real-time through a secure admin panel without ever touching the code!
 *🇹🇷 Bu projenin açıklaması aşağıda Türkçe olarak da mevcuttur.*
 ---
