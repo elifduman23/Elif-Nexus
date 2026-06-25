@@ -480,13 +480,24 @@ $(document).ready(function() {
             else level = 'Temel';
         }
 
+        const commonLangs = ["HTML", "CSS", "JavaScript", "TypeScript", "Python", "C#", "SQL", "Java", "C++", "PHP", "Swift", "Go", "Kotlin", "Ruby", "Rust", "Dart", "React", "Node.js", "Firebase", "MongoDB"];
+        let dataListOptions = '';
+        commonLangs.forEach(lang => { dataListOptions += `<option value="${lang}">`; });
+
+        // Datalist her forma özel olmalı (veya dökümanda bir kez olmalı). 
+        // Basitlik için her forma id'si unique bir datalist ekleyelim
+        const listId = "skillsList_" + Math.random().toString(36).substr(2, 9);
+
         const formHtml = `
             <div class="skill-edit-item border rounded p-3 mb-2 position-relative bg-light">
                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-skill-btn"><i class="fas fa-trash"></i></button>
                 <div class="row g-2 align-items-center pe-4">
                     <div class="col-8">
-                        <label class="form-label small fw-bold mb-1">Yetenek Adı</label>
-                        <input type="text" class="form-control form-control-sm skill-name" value="${name}" placeholder="Örn: Python">
+                        <label class="form-label small fw-bold mb-1">Yetenek Adı (Seç veya Yaz)</label>
+                        <input type="text" class="form-control form-control-sm skill-name" value="${name}" list="${listId}" placeholder="Listeden seçin veya yazın...">
+                        <datalist id="${listId}">
+                            ${dataListOptions}
+                        </datalist>
                     </div>
                     <div class="col-4">
                         <label class="form-label small fw-bold mb-1">Seviye</label>
