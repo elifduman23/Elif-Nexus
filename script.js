@@ -101,14 +101,31 @@ $(document).ready(function() {
         if (data.skills) {
             let skillsHtml = '';
             data.skills.forEach(function(skill) {
+                // Geriye dönük uyumluluk: eğer eski veride percentage varsa level'e çevir
+                let levelText = skill.level;
+                if (!levelText && skill.percentage !== undefined) {
+                    if (skill.percentage >= 80) levelText = 'İleri';
+                    else if (skill.percentage >= 50) levelText = 'Orta';
+                    else levelText = 'Temel';
+                }
+                if (!levelText) levelText = 'Orta';
+
+                let percentValue = 33;
+                if (levelText === 'İleri') percentValue = 100;
+                else if (levelText === 'Orta') percentValue = 66;
+
+                let badgeColor = 'bg-info text-dark';
+                if (levelText === 'İleri') badgeColor = 'bg-primary';
+                else if (levelText === 'Temel') badgeColor = 'bg-secondary';
+
                 skillsHtml += `
                     <div class="col-md-6 mb-3">
-                        <div class="d-flex justify-content-between mb-1">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-bold">${skill.name}</span>
-                            <span class="text-muted small">%${skill.percentage}</span>
+                            <span class="badge ${badgeColor}">${levelText}</span>
                         </div>
                         <div class="progress">
-                            <div class="progress-bar" role="progressbar" style="width: ${skill.percentage}%" aria-valuenow="${skill.percentage}" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar" role="progressbar" style="width: ${percentValue}%" aria-valuenow="${percentValue}" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 `;
@@ -454,8 +471,15 @@ $(document).ready(function() {
 
     function addSkillForm(skill) {
         const name = skill ? skill.name : '';
-        const percentage = skill ? skill.percentage : '50';
+        let level = skill ? skill.level : 'Orta';
         
+        // Eski veri uyumluluğu
+        if (!level && skill && skill.percentage !== undefined) {
+            if (skill.percentage >= 80) level = 'İleri';
+            else if (skill.percentage >= 50) level = 'Orta';
+            else level = 'Temel';
+        }
+
         const formHtml = `
             <div class="skill-edit-item border rounded p-3 mb-2 position-relative bg-light">
                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-skill-btn"><i class="fas fa-trash"></i></button>
@@ -465,8 +489,12 @@ $(document).ready(function() {
                         <input type="text" class="form-control form-control-sm skill-name" value="${name}" placeholder="Örn: Python">
                     </div>
                     <div class="col-4">
-                        <label class="form-label small fw-bold mb-1">Yüzde (%)</label>
-                        <input type="number" class="form-control form-control-sm skill-percent" value="${percentage}" min="0" max="100">
+                        <label class="form-label small fw-bold mb-1">Seviye</label>
+                        <select class="form-select form-select-sm skill-level">
+                            <option value="Temel" ${level === 'Temel' ? 'selected' : ''}>Temel</option>
+                            <option value="Orta" ${level === 'Orta' ? 'selected' : ''}>Orta</option>
+                            <option value="İleri" ${level === 'İleri' ? 'selected' : ''}>İleri</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -484,13 +512,10 @@ $(document).ready(function() {
 
         $('.skill-edit-item').each(function() {
             const name = $(this).find('.skill-name').val().trim();
-            let percent = parseInt($(this).find('.skill-percent').val().trim());
-            if (isNaN(percent)) percent = 50;
-            if (percent > 100) percent = 100;
-            if (percent < 0) percent = 0;
+            const level = $(this).find('.skill-level').val();
             
             if (name !== '') {
-                newSkills.push({ name: name, percentage: percent });
+                newSkills.push({ name: name, level: level });
             }
         });
 
