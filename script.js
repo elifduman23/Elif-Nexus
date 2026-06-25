@@ -276,4 +276,103 @@ $(document).ready(function() {
         });
     });
 
+    // ==========================================
+    // PROJE DÜZENLEME İŞLEMLERİ
+    // ==========================================
+
+    // Projeleri Düzenle Butonuna Tıklayınca
+    $('.edit-btn[data-edit-type="projects"]').click(function() {
+        db.ref('portfolio/projects').once('value').then((snapshot) => {
+            const projects = snapshot.val() || [];
+            $('#projectsEditContainer').empty();
+            
+            if (projects.length === 0) {
+                // Hiç proje yoksa bir tane boş form ekle
+                addProjectForm(null);
+            } else {
+                projects.forEach((proj) => {
+                    addProjectForm(proj);
+                });
+            }
+            
+            $('#editProjectsModal').modal('show');
+        });
+    });
+
+    // Proje Formu Ekleyen Fonksiyon
+    function addProjectForm(proj) {
+        const title = proj ? proj.title : '';
+        const desc = proj ? proj.description : '';
+        const tags = proj && proj.tags ? proj.tags.join(', ') : '';
+        const link = proj && proj.link !== '#' ? proj.link : '';
+        
+        const formHtml = `
+            <div class="project-edit-item border rounded p-3 mb-3 position-relative bg-light shadow-sm">
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-project-btn" title="Projeyi Sil"><i class="fas fa-trash"></i></button>
+                <div class="mb-2 pe-4">
+                    <label class="form-label small fw-bold mb-1">Proje Adı</label>
+                    <input type="text" class="form-control form-control-sm proj-title" value="${title}" placeholder="Örn: E-Ticaret Sitesi">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold mb-1">Açıklama</label>
+                    <textarea class="form-control form-control-sm proj-desc" rows="2" placeholder="Proje detayları...">${desc}</textarea>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold mb-1">Etiketler (Virgülle ayırın)</label>
+                    <input type="text" class="form-control form-control-sm proj-tags" value="${tags}" placeholder="Örn: HTML, CSS, JavaScript">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold mb-1">Proje Linki</label>
+                    <input type="text" class="form-control form-control-sm proj-link" value="${link}" placeholder="https://github.com/...">
+                </div>
+            </div>
+        `;
+        $('#projectsEditContainer').append(formHtml);
+    }
+
+    // Yeni Proje Ekle Butonuna Tıklayınca
+    $('#addProjectBtn').click(function() {
+        addProjectForm(null);
+    });
+
+    // Proje Sil Butonuna Tıklayınca
+    $(document).on('click', '.remove-project-btn', function() {
+        $(this).closest('.project-edit-item').remove();
+    });
+
+    // Projeleri Kaydet Butonuna Tıklayınca
+    $('#saveProjectsBtn').click(function() {
+        const newProjects = [];
+        const btn = $(this);
+        btn.prop('disabled', true).text('Kaydediliyor...');
+
+        $('.project-edit-item').each(function() {
+            const title = $(this).find('.proj-title').val().trim();
+            const desc = $(this).find('.proj-desc').val().trim();
+            const tagsInput = $(this).find('.proj-tags').val().trim();
+            const link = $(this).find('.proj-link').val().trim();
+            
+            // Sadece başlığı olanları projeler listesine dahil et (Boşları geç)
+            if (title !== '') {
+                const tagsArray = tagsInput ? tagsInput.split(',').map(t => t.trim()).filter(t => t !== '') : [];
+                newProjects.push({
+                    title: title,
+                    description: desc,
+                    tags: tagsArray,
+                    link: link || '#'
+                });
+            }
+        });
+
+        // Veritabanına boş dizi yollamak yerine null set etmek, 'projects' dalını temizler
+        db.ref('portfolio/projects').set(newProjects.length > 0 ? newProjects : null).then(() => {
+            $('#editProjectsModal').modal('hide');
+            btn.prop('disabled', false).text('Projeleri Kaydet');
+        }).catch((error) => {
+            console.error("Projeler kaydedilemedi: ", error);
+            alert("Projeler kaydedilirken bir hata oluştu!");
+            btn.prop('disabled', false).text('Projeleri Kaydet');
+        });
+    });
+
 });
