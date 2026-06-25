@@ -175,7 +175,36 @@ $(document).ready(function() {
 
         db.ref('portfolio/profile').update(newProfile).then(() => {
             $('#editProfileModal').modal('hide');
-            // Uyarı vs eklenebilir. Firebase .on('value') sayesinde arayüz otomatik güncellenir.
+        });
+    });
+
+    // Sosyal Linkleri Düzenle Butonuna Tıklayınca
+    $('#editSocialsBtn').click(function() {
+        db.ref('portfolio/socials').once('value').then((snapshot) => {
+            const socials = snapshot.val();
+            if (socials && Array.isArray(socials)) {
+                socials.forEach(social => {
+                    if (social.name === "LinkedIn") $('#editSocialLinkedin').val(social.url);
+                    if (social.name === "GitHub") $('#editSocialGithub').val(social.url);
+                    if (social.name === "Kaggle") $('#editSocialKaggle').val(social.url);
+                    if (social.name === "YouTube") $('#editSocialYoutube').val(social.url);
+                });
+            }
+            $('#editSocialsModal').modal('show');
+        });
+    });
+
+    // Sosyal Linkleri Kaydet Butonuna Tıklayınca
+    $('#saveSocialsBtn').click(function() {
+        const newSocials = [
+            { name: "LinkedIn", icon: "fab fa-linkedin-in", url: $('#editSocialLinkedin').val() || "#" },
+            { name: "GitHub", icon: "fab fa-github", url: $('#editSocialGithub').val() || "#" },
+            { name: "Kaggle", icon: "fab fa-kaggle", url: $('#editSocialKaggle').val() || "#" },
+            { name: "YouTube", icon: "fab fa-youtube", url: $('#editSocialYoutube').val() || "#" }
+        ];
+
+        db.ref('portfolio/socials').set(newSocials).then(() => {
+            $('#editSocialsModal').modal('hide');
         });
     });
 
