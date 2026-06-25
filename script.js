@@ -82,6 +82,17 @@ function translatePage() {
 
 $(document).ready(function() {
     
+    // Datalist'leri doldur (data_lists.js'ten gelen dizilerle)
+    if (typeof turkeyProvinces !== 'undefined') {
+        $('#provincesList').html(turkeyProvinces.map(p => `<option value="${p}">`).join(''));
+    }
+    if (typeof turkeyUniversities !== 'undefined') {
+        $('#universitiesList').html(turkeyUniversities.map(u => `<option value="${u}">`).join(''));
+    }
+    if (typeof turkeyHighSchools !== 'undefined') {
+        $('#highSchoolsList').html(turkeyHighSchools.map(h => `<option value="${h}">`).join(''));
+    }
+
     // Dil Seçimi Değiştirildiğinde
     $('#langToggleBtn').click(function() {
         currentLang = currentLang === 'tr' ? 'en' : 'tr';
@@ -229,11 +240,16 @@ $(document).ready(function() {
                 let subtitleText = currentLang === 'en' && item.subtitle_en ? item.subtitle_en : item.subtitle;
                 let descText = currentLang === 'en' && item.description_en ? item.description_en : item.description;
 
+                let subtitleDisplay = subtitleText;
+                if (item.province) {
+                    subtitleDisplay += ` <span class="badge bg-secondary ms-1"><i class="fas fa-map-marker-alt"></i> ${item.province}</span>`;
+                }
+
                 timelineHtml += `
                     <div class="timeline-item">
                         <div class="timeline-date">${item.period}</div>
                         <div class="timeline-title">${titleText}</div>
-                        <div class="timeline-subtitle">${subtitleText}</div>
+                        <div class="timeline-subtitle">${subtitleDisplay}</div>
                         ${descText ? `<p class="small text-muted mb-0">${descText}</p>` : ''}
                     </div>
                 `;
@@ -675,11 +691,37 @@ $(document).ready(function() {
         const period = item ? item.period : '';
         const desc = item ? item.description : '';
         const desc_en = item && item.description_en ? item.description_en : '';
+        const type = item && item.type ? item.type : 'İş/Deneyim';
+        const province = item && item.province ? item.province : '';
+        
+        const formId = "tl_form_" + Math.random().toString(36).substr(2, 9);
         
         const formHtml = `
-            <div class="timeline-edit-item border rounded p-3 mb-3 position-relative bg-light">
+            <div class="timeline-edit-item border rounded p-3 mb-3 position-relative bg-light" id="${formId}">
                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-timeline-btn"><i class="fas fa-trash"></i></button>
+                
                 <div class="row g-2 mb-2 pe-4">
+                    <div class="col-4">
+                        <label class="form-label small fw-bold mb-1">Kayıt Türü</label>
+                        <select class="form-select form-select-sm tl-type">
+                            <option value="İş/Deneyim" ${type==='İş/Deneyim'?'selected':''}>İş/Deneyim</option>
+                            <option value="Üniversite" ${type==='Üniversite'?'selected':''}>Üniversite</option>
+                            <option value="Lise" ${type==='Lise'?'selected':''}>Lise</option>
+                            <option value="Ortaokul" ${type==='Ortaokul'?'selected':''}>Ortaokul</option>
+                            <option value="İlkokul" ${type==='İlkokul'?'selected':''}>İlkokul</option>
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small fw-bold mb-1">İl (Opsiyonel)</label>
+                        <input type="text" class="form-control form-control-sm tl-province" value="${province}" list="provincesList" placeholder="Şehir seçin...">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small fw-bold mb-1">Tarih / Yıl</label>
+                        <input type="text" class="form-control form-control-sm tl-period" value="${period}" placeholder="Örn: 2021 - Günümüz">
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-2">
                     <div class="col-6">
                         <label class="form-label small fw-bold mb-1">Başlık (TR)</label>
                         <input type="text" class="form-control form-control-sm tl-title" value="${title}" placeholder="Örn: Frontend Geliştirici">
@@ -690,17 +732,13 @@ $(document).ready(function() {
                     </div>
                 </div>
                 <div class="row g-2 mb-2">
-                    <div class="col-4">
-                        <label class="form-label small fw-bold mb-1">Kurum (TR)</label>
-                        <input type="text" class="form-control form-control-sm tl-subtitle" value="${subtitle}" placeholder="Örn: Teknoloji A.Ş.">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold mb-1">Kurum/Okul (TR)</label>
+                        <input type="text" class="form-control form-control-sm tl-subtitle tl-inst-tr" value="${subtitle}" placeholder="Örn: Teknoloji A.Ş.">
                     </div>
-                    <div class="col-4">
-                        <label class="form-label small fw-bold mb-1">Kurum (EN)</label>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold mb-1">Kurum/Okul (EN)</label>
                         <input type="text" class="form-control form-control-sm tl-subtitle-en" value="${subtitle_en}" placeholder="e.g. Technology Inc.">
-                    </div>
-                    <div class="col-4">
-                        <label class="form-label small fw-bold mb-1">Tarih / Yıl</label>
-                        <input type="text" class="form-control form-control-sm tl-period" value="${period}" placeholder="Örn: 2021 - Günümüz">
                     </div>
                 </div>
                 <div class="row g-2 mb-2">
@@ -711,11 +749,48 @@ $(document).ready(function() {
                     <div class="col-6">
                         <label class="form-label small fw-bold mb-1">Açıklama (EN)</label>
                         <textarea class="form-control form-control-sm tl-desc-en" rows="2" placeholder="Task details...">${desc_en}</textarea>
-                    </div>
                 </div>
             </div>
+            <datalist id="uniList_${formId}"></datalist>
         `;
         $('#timelineEditContainer').append(formHtml);
+
+        // İl değiştiğinde üniversite listesini filtrele
+        const updateUniList = () => {
+            const selectedProv = $(`#${formId} .tl-province`).val();
+            const $uniDatalist = $(`#uniList_${formId}`);
+            
+            if (typeof turkeyUniversitiesByProvince !== 'undefined') {
+                let unisToShow = [];
+                // Eğer geçerli bir il seçildiyse sadece o ildekileri göster, değilse hepsini
+                if (selectedProv && turkeyUniversitiesByProvince[selectedProv]) {
+                    unisToShow = turkeyUniversitiesByProvince[selectedProv];
+                } else {
+                    unisToShow = Object.values(turkeyUniversitiesByProvince).flat();
+                }
+                $uniDatalist.html(unisToShow.map(u => `<option value="${u}">`).join(''));
+            }
+        };
+
+        // İl alanına yazıldıkça veya değiştiğinde filtreyi güncelle
+        $(`#${formId} .tl-province`).on('input change', updateUniList);
+        updateUniList(); // Form eklenirken bir kez çalıştır
+
+        // Tür değiştiğinde datalist'i ayarla
+        const updateDatalist = () => {
+            const currentType = $(`#${formId} .tl-type`).val();
+            const $instTr = $(`#${formId} .tl-inst-tr`);
+            if (currentType === 'Üniversite') {
+                $instTr.attr('list', `uniList_${formId}`);
+            } else if (currentType === 'Lise' || currentType === 'Ortaokul' || currentType === 'İlkokul') {
+                $instTr.attr('list', 'highSchoolsList');
+            } else {
+                $instTr.removeAttr('list');
+            }
+        };
+        
+        $(`#${formId} .tl-type`).change(updateDatalist);
+        updateDatalist(); // İlk yüklemede çalıştır
     }
 
     $('#addTimelineBtn').click(function() { addTimelineForm(null); });
@@ -734,6 +809,8 @@ $(document).ready(function() {
             const period = $(this).find('.tl-period').val().trim();
             const desc = $(this).find('.tl-desc').val().trim();
             const desc_en = $(this).find('.tl-desc-en').val().trim();
+            const type = $(this).find('.tl-type').val();
+            const province = $(this).find('.tl-province').val().trim();
             
             if (title !== '') {
                 newTimeline.push({
@@ -743,7 +820,9 @@ $(document).ready(function() {
                     subtitle_en: subtitle_en,
                     period: period,
                     description: desc,
-                    description_en: desc_en
+                    description_en: desc_en,
+                    type: type,
+                    province: province
                 });
             }
         });
