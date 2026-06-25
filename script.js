@@ -93,6 +93,47 @@ $(document).ready(function() {
                 `;
             });
             $('#projectsContainer').html(projectsHtml);
+        } else {
+            $('#projectsContainer').html('<p class="text-muted">Henüz proje eklenmedi.</p>');
+        }
+
+        // Yetenekler
+        if (data.skills) {
+            let skillsHtml = '';
+            data.skills.forEach(function(skill) {
+                skillsHtml += `
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold">${skill.name}</span>
+                            <span class="text-muted small">%${skill.percentage}</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" role="progressbar" style="width: ${skill.percentage}%" aria-valuenow="${skill.percentage}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#skillsContainer').html(skillsHtml);
+        } else {
+            $('#skillsContainer').html('<p class="text-muted">Henüz yetenek eklenmedi.</p>');
+        }
+
+        // Zaman Çizelgesi
+        if (data.timeline) {
+            let timelineHtml = '';
+            data.timeline.forEach(function(item) {
+                timelineHtml += `
+                    <div class="timeline-item">
+                        <div class="timeline-date">${item.period}</div>
+                        <div class="timeline-title">${item.title}</div>
+                        <div class="timeline-subtitle">${item.subtitle}</div>
+                        ${item.description ? `<p class="small text-muted mb-0">${item.description}</p>` : ''}
+                    </div>
+                `;
+            });
+            $('#timelineContainer').html(timelineHtml);
+        } else {
+            $('#timelineContainer').html('<p class="text-muted">Henüz deneyim veya eğitim eklenmedi.</p>');
         }
     }
 
@@ -320,8 +361,6 @@ $(document).ready(function() {
             `;
         });
         checkboxesHtml += '</div>';
-
-        const otherTags = currentTags.filter(t => !commonLangs.includes(t)).join(', ');
         
         const formHtml = `
             <div class="project-edit-item border rounded p-3 mb-3 position-relative bg-light shadow-sm">
@@ -337,10 +376,6 @@ $(document).ready(function() {
                 <div class="mb-2">
                     <label class="form-label small fw-bold mb-1">Kullanılan Teknolojiler / Diller</label>
                     ${checkboxesHtml}
-                </div>
-                <div class="mb-2">
-                    <label class="form-label small fw-bold mb-1">Ekstra Etiketler (Listede olmayanlar, virgülle ayırın)</label>
-                    <input type="text" class="form-control form-control-sm proj-tags-other" value="${otherTags}" placeholder="Örn: Bootstrap, Figma">
                 </div>
                 <div class="mb-2">
                     <label class="form-label small fw-bold mb-1">Proje Linki</label>
@@ -379,15 +414,10 @@ $(document).ready(function() {
                     selectedLangs.push($(this).val());
                 });
 
-                const otherTagsInput = $(this).find('.proj-tags-other').val().trim();
-                const otherTagsArray = otherTagsInput ? otherTagsInput.split(',').map(t => t.trim()).filter(t => t !== '') : [];
-
-                const tagsArray = [...new Set([...selectedLangs, ...otherTagsArray])];
-
                 newProjects.push({
                     title: title,
                     description: desc,
-                    tags: tagsArray,
+                    tags: selectedLangs,
                     link: link || '#'
                 });
             }
@@ -401,6 +431,158 @@ $(document).ready(function() {
             console.error("Projeler kaydedilemedi: ", error);
             alert("Projeler kaydedilirken bir hata oluştu!");
             btn.prop('disabled', false).text('Projeleri Kaydet');
+        });
+    });
+
+    // ==========================================
+    // YETENEK DÜZENLEME İŞLEMLERİ
+    // ==========================================
+
+    $('.edit-btn[data-edit-type="skills"]').click(function() {
+        db.ref('portfolio/skills').once('value').then((snapshot) => {
+            const skills = snapshot.val() || [];
+            $('#skillsEditContainer').empty();
+            
+            if (skills.length === 0) {
+                addSkillForm(null);
+            } else {
+                skills.forEach((skill) => addSkillForm(skill));
+            }
+            $('#editSkillsModal').modal('show');
+        });
+    });
+
+    function addSkillForm(skill) {
+        const name = skill ? skill.name : '';
+        const percentage = skill ? skill.percentage : '50';
+        
+        const formHtml = `
+            <div class="skill-edit-item border rounded p-3 mb-2 position-relative bg-light">
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-skill-btn"><i class="fas fa-trash"></i></button>
+                <div class="row g-2 align-items-center pe-4">
+                    <div class="col-8">
+                        <label class="form-label small fw-bold mb-1">Yetenek Adı</label>
+                        <input type="text" class="form-control form-control-sm skill-name" value="${name}" placeholder="Örn: Python">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small fw-bold mb-1">Yüzde (%)</label>
+                        <input type="number" class="form-control form-control-sm skill-percent" value="${percentage}" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#skillsEditContainer').append(formHtml);
+    }
+
+    $('#addSkillBtn').click(function() { addSkillForm(null); });
+    $(document).on('click', '.remove-skill-btn', function() { $(this).closest('.skill-edit-item').remove(); });
+
+    $('#saveSkillsBtn').click(function() {
+        const newSkills = [];
+        const btn = $(this);
+        btn.prop('disabled', true).text('Kaydediliyor...');
+
+        $('.skill-edit-item').each(function() {
+            const name = $(this).find('.skill-name').val().trim();
+            let percent = parseInt($(this).find('.skill-percent').val().trim());
+            if (isNaN(percent)) percent = 50;
+            if (percent > 100) percent = 100;
+            if (percent < 0) percent = 0;
+            
+            if (name !== '') {
+                newSkills.push({ name: name, percentage: percent });
+            }
+        });
+
+        db.ref('portfolio/skills').set(newSkills.length > 0 ? newSkills : null).then(() => {
+            $('#editSkillsModal').modal('hide');
+            btn.prop('disabled', false).text('Yetenekleri Kaydet');
+        }).catch((error) => {
+            alert("Hata oluştu!");
+            btn.prop('disabled', false).text('Yetenekleri Kaydet');
+        });
+    });
+
+    // ==========================================
+    // ZAMAN ÇİZELGESİ (TIMELINE) DÜZENLEME İŞLEMLERİ
+    // ==========================================
+
+    $('.edit-btn[data-edit-type="timeline"]').click(function() {
+        db.ref('portfolio/timeline').once('value').then((snapshot) => {
+            const timeline = snapshot.val() || [];
+            $('#timelineEditContainer').empty();
+            
+            if (timeline.length === 0) {
+                addTimelineForm(null);
+            } else {
+                timeline.forEach((item) => addTimelineForm(item));
+            }
+            $('#editTimelineModal').modal('show');
+        });
+    });
+
+    function addTimelineForm(item) {
+        const title = item ? item.title : '';
+        const subtitle = item ? item.subtitle : '';
+        const period = item ? item.period : '';
+        const desc = item ? item.description : '';
+        
+        const formHtml = `
+            <div class="timeline-edit-item border rounded p-3 mb-3 position-relative bg-light">
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-timeline-btn"><i class="fas fa-trash"></i></button>
+                <div class="mb-2 pe-4">
+                    <label class="form-label small fw-bold mb-1">Başlık / Pozisyon</label>
+                    <input type="text" class="form-control form-control-sm tl-title" value="${title}" placeholder="Örn: Frontend Developer">
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold mb-1">Kurum / Şirket</label>
+                        <input type="text" class="form-control form-control-sm tl-subtitle" value="${subtitle}" placeholder="Örn: Google">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold mb-1">Tarih / Yıl</label>
+                        <input type="text" class="form-control form-control-sm tl-period" value="${period}" placeholder="Örn: 2021 - Günümüz">
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small fw-bold mb-1">Açıklama</label>
+                    <textarea class="form-control form-control-sm tl-desc" rows="2" placeholder="Görev detayları...">${desc}</textarea>
+                </div>
+            </div>
+        `;
+        $('#timelineEditContainer').append(formHtml);
+    }
+
+    $('#addTimelineBtn').click(function() { addTimelineForm(null); });
+    $(document).on('click', '.remove-timeline-btn', function() { $(this).closest('.timeline-edit-item').remove(); });
+
+    $('#saveTimelineBtn').click(function() {
+        const newTimeline = [];
+        const btn = $(this);
+        btn.prop('disabled', true).text('Kaydediliyor...');
+
+        $('.timeline-edit-item').each(function() {
+            const title = $(this).find('.tl-title').val().trim();
+            const subtitle = $(this).find('.tl-subtitle').val().trim();
+            const period = $(this).find('.tl-period').val().trim();
+            const desc = $(this).find('.tl-desc').val().trim();
+            
+            if (title !== '') {
+                newTimeline.push({
+                    title: title,
+                    subtitle: subtitle,
+                    period: period,
+                    description: desc
+                });
+            }
+        });
+
+        db.ref('portfolio/timeline').set(newTimeline.length > 0 ? newTimeline : null).then(() => {
+            $('#editTimelineModal').modal('hide');
+            btn.prop('disabled', false).text('Çizelgeyi Kaydet');
+        }).catch((error) => {
+            alert("Hata oluştu!");
+            btn.prop('disabled', false).text('Çizelgeyi Kaydet');
         });
     });
 

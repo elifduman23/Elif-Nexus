@@ -55,10 +55,29 @@
                     </div>
                 </div>
 
-                <!-- Sol/Orta Kısım: Projeler -->
-                <div class="col-md-8">
-                    <div class="projects-container p-4 glass-effect h-100 position-relative">
-                        <!-- Admin Düzenle Butonu (Gizli) -->
+                <!-- Sol/Orta Kısım -->
+                <div class="col-md-8 d-flex flex-column gap-4">
+                    
+                    <!-- Yetenekler -->
+                    <div class="skills-container p-4 glass-effect position-relative">
+                        <button class="btn btn-sm btn-warning edit-btn admin-only d-none" data-edit-type="skills" title="Yetenekleri Düzenle"><i class="fas fa-edit"></i></button>
+                        <h3 class="mb-4 fw-bold border-bottom border-secondary pb-2">Yeteneklerim</h3>
+                        <div class="row g-4" id="skillsContainer">
+                            <!-- Yetenekler buraya dinamik eklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Deneyim & Eğitim Zaman Çizelgesi -->
+                    <div class="timeline-container p-4 glass-effect position-relative">
+                        <button class="btn btn-sm btn-warning edit-btn admin-only d-none" data-edit-type="timeline" title="Zaman Çizelgesini Düzenle"><i class="fas fa-edit"></i></button>
+                        <h3 class="mb-4 fw-bold border-bottom border-secondary pb-2">Deneyim & Eğitim</h3>
+                        <div class="timeline" id="timelineContainer">
+                            <!-- Timeline öğeleri buraya dinamik eklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Projeler -->
+                    <div class="projects-container p-4 glass-effect position-relative">
                         <button class="btn btn-sm btn-warning edit-btn admin-only d-none" data-edit-type="projects" title="Projeleri Düzenle"><i class="fas fa-edit"></i></button>
 
                         <h3 class="mb-4 fw-bold border-bottom border-secondary pb-2">Projelerim</h3>
@@ -198,6 +217,52 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success w-100" id="saveProjectsBtn">Projeleri Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Skills Modal -->
+    <div class="modal fade" id="editSkillsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-star text-warning me-2"></i>Yetenekleri Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="skillsEditContainer">
+                        <!-- Yetenek formları buraya eklenecek -->
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-3 w-100 fw-bold" id="addSkillBtn">
+                        <i class="fas fa-plus"></i> Yeni Yetenek Ekle
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success w-100" id="saveSkillsBtn">Yetenekleri Kaydet</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Timeline Modal -->
+    <div class="modal fade" id="editTimelineModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content text-dark">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-history text-info me-2"></i>Deneyim ve Eğitimi Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="timelineEditContainer">
+                        <!-- Timeline formları buraya eklenecek -->
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-sm mt-3 w-100 fw-bold" id="addTimelineBtn">
+                        <i class="fas fa-plus"></i> Yeni Kayıt Ekle
+                    </button>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success w-100" id="saveTimelineBtn">Çizelgeyi Kaydet</button>
                 </div>
             </div>
         </div>
