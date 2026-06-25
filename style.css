@@ -33,9 +33,23 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Admin Düzenle Butonu */
+.edit-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
 /* Profil Alanı */
 .profile-card {
-    position: relative;
     overflow: hidden;
 }
 
@@ -147,15 +161,6 @@ body {
 
 .project-link:hover {
     color: var(--primary-color);
-}
-
-.project-link i {
-    margin-left: 5px;
-    transition: transform 0.2s ease;
-}
-
-.project-link:hover i {
-    transform: translateX(3px);
 }
 
 /* Kaydırma Çubuğu Özelleştirmesi */
