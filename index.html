@@ -20,8 +20,15 @@
 </head>
 <body>
 
-    <div class="container-fluid py-5 min-vh-100 d-flex flex-column align-items-center justify-content-center background-pattern">
+    <div class="container-fluid py-5 min-vh-100 d-flex flex-column align-items-center justify-content-center background-pattern position-relative">
         
+        <!-- Dil Değiştirici -->
+        <div class="position-absolute top-0 end-0 p-3 z-3">
+            <button class="btn btn-sm btn-outline-light rounded-pill fw-bold" id="langToggleBtn" data-lang="tr">
+                🇹🇷 TR
+            </button>
+        </div>
+
         <div class="container main-container flex-grow-1 d-flex align-items-center">
             <div class="row g-4 flex-md-row-reverse w-100">
                 
@@ -47,8 +54,8 @@
                     
                     <!-- İletişim / Geri Bildirim Kartı -->
                     <div class="contact-card mt-4 p-3 text-center glass-effect position-relative" style="display:none;">
-                        <h5 class="fw-bold mb-2 text-white">İletişim & Geri Bildirim</h5>
-                        <p class="small mb-2" style="color: #cbd5e1;">Bana buradan ulaşabilirsiniz:</p>
+                        <h5 class="fw-bold mb-2 text-white" data-i18n="contact_title">İletişim & Geri Bildirim</h5>
+                        <p class="small mb-2" style="color: #cbd5e1;" data-i18n="contact_subtitle">Bana buradan ulaşabilirsiniz:</p>
                         <a href="#" id="profileEmailLink" class="text-decoration-none fw-bold text-gradient fs-5">
                             <i class="fas fa-envelope me-2"></i><span id="profileEmailText">Yükleniyor...</span>
                         </a>
@@ -61,7 +68,7 @@
                     <!-- Yetenekler -->
                     <div class="skills-container p-4 glass-effect position-relative">
                         <button class="btn btn-sm btn-warning edit-btn admin-only d-none" data-edit-type="skills" title="Yetenekleri Düzenle"><i class="fas fa-edit"></i></button>
-                        <h3 class="mb-4 fw-bold border-bottom border-secondary pb-2">Yeteneklerim</h3>
+                        <h3 class="mb-4 fw-bold border-bottom border-secondary pb-2" data-i18n="skills_title">Yeteneklerim</h3>
                         <div class="row g-4" id="skillsContainer">
                             <!-- Yetenekler buraya dinamik eklenecek -->
                         </div>
@@ -70,7 +77,7 @@
                     <!-- Deneyim & Eğitim Zaman Çizelgesi -->
                     <div class="timeline-container p-4 glass-effect position-relative">
                         <button class="btn btn-sm btn-warning edit-btn admin-only d-none" data-edit-type="timeline" title="Zaman Çizelgesini Düzenle"><i class="fas fa-edit"></i></button>
-                        <h3 class="mb-4 fw-bold border-bottom border-secondary pb-2">Deneyim & Eğitim</h3>
+                        <h3 class="mb-4 fw-bold border-bottom border-secondary pb-2" data-i18n="timeline_title">Deneyim & Eğitim</h3>
                         <div class="timeline" id="timelineContainer">
                             <!-- Timeline öğeleri buraya dinamik eklenecek -->
                         </div>
@@ -80,7 +87,7 @@
                     <div class="projects-container p-4 glass-effect position-relative">
                         <button class="btn btn-sm btn-warning edit-btn admin-only d-none" data-edit-type="projects" title="Projeleri Düzenle"><i class="fas fa-edit"></i></button>
 
-                        <h3 class="mb-4 fw-bold border-bottom border-secondary pb-2">Projelerim</h3>
+                        <h3 class="mb-4 fw-bold border-bottom border-secondary pb-2" data-i18n="projects_title">Projelerim</h3>
                         <div class="row g-3" id="projectsContainer">
                             <!-- Projeler buraya dinamik eklenecek -->
                         </div>
@@ -90,11 +97,10 @@
             </div>
         </div>
 
-        <!-- Footer / Admin Giriş Kilidi -->
         <div class="mt-5 text-center w-100 position-relative">
-            <p class="text-muted mb-3"><small>&copy; 2026 ElifNexus</small></p>
-            <button class="btn btn-danger px-4 py-2 rounded-pill shadow" id="adminLockBtn"><i class="fas fa-user-shield me-2"></i>Yönetici (Admin) Girişi</button>
-            <button class="btn btn-outline-danger px-4 py-2 rounded-pill shadow d-none admin-only" id="adminLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap</button>
+            <p class="text-muted mb-3"><small>&copy; 2026 <span id="footerName">ElifNexus</span></small></p>
+            <button class="btn btn-danger px-4 py-2 rounded-pill shadow" id="adminLockBtn"><i class="fas fa-user-shield me-2"></i><span data-i18n="admin_login">Yönetici (Admin) Girişi</span></button>
+            <button class="btn btn-outline-danger px-4 py-2 rounded-pill shadow d-none admin-only" id="adminLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i><span data-i18n="admin_logout">Çıkış Yap</span></button>
         </div>
 
     </div>
@@ -151,8 +157,12 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Biyografi</label>
-                        <textarea id="editBio" class="form-control" rows="4"></textarea>
+                        <label class="form-label">Biyografi (TR)</label>
+                        <textarea id="editBio" class="form-control mb-2" rows="3" placeholder="Türkçe biyografiniz..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Biyografi (EN)</label>
+                        <textarea id="editBioEn" class="form-control" rows="3" placeholder="English biography..."></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">İletişim (E-posta)</label>

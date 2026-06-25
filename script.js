@@ -23,22 +23,94 @@ const db = isFirebaseConfigured ? firebase.database() : null;
 const auth = isFirebaseConfigured ? firebase.auth() : null;
 
 // ==========================================
-// UYGULAMA MANTIĞI
+// UYGULAMA MANTIĞI VE ÇOKLU DİL
 // ==========================================
+
+const i18n = {
+    tr: {
+        contact_title: "İletişim & Geri Bildirim",
+        contact_subtitle: "Bana buradan ulaşabilirsiniz:",
+        skills_title: "Yeteneklerim",
+        timeline_title: "Deneyim & Eğitim",
+        projects_title: "Projelerim",
+        admin_login: "Yönetici (Admin) Girişi",
+        admin_logout: "Çıkış Yap",
+        no_projects: "Henüz proje eklenmedi.",
+        no_skills: "Henüz yetenek eklenmedi.",
+        no_timeline: "Henüz deneyim veya eğitim eklenmedi.",
+        loading: "Lütfen bekleyin, veriler çekiliyor...",
+        view_project: "Projeyi İncele",
+        skill_basic: "Temel",
+        skill_intermediate: "Orta",
+        skill_advanced: "İleri"
+    },
+    en: {
+        contact_title: "Contact & Feedback",
+        contact_subtitle: "You can reach me here:",
+        skills_title: "My Skills",
+        timeline_title: "Experience & Education",
+        projects_title: "My Projects",
+        admin_login: "Admin Login",
+        admin_logout: "Logout",
+        no_projects: "No projects added yet.",
+        no_skills: "No skills added yet.",
+        no_timeline: "No experience or education added yet.",
+        loading: "Please wait, fetching data...",
+        view_project: "View Project",
+        skill_basic: "Basic",
+        skill_intermediate: "Intermediate",
+        skill_advanced: "Advanced"
+    }
+};
+
+let currentLang = localStorage.getItem('lang') || 'tr';
+
+function translatePage() {
+    $('[data-i18n]').each(function() {
+        const key = $(this).attr('data-i18n');
+        if (i18n[currentLang][key]) {
+            if ($(this).is('input') || $(this).is('textarea')) {
+                $(this).attr('placeholder', i18n[currentLang][key]);
+            } else {
+                $(this).text(i18n[currentLang][key]);
+            }
+        }
+    });
+    
+    $('#langToggleBtn').html(currentLang === 'tr' ? '🇹🇷 TR' : '🇬🇧 EN');
+}
+
 $(document).ready(function() {
     
+    // Dil Seçimi Değiştirildiğinde
+    $('#langToggleBtn').click(function() {
+        currentLang = currentLang === 'tr' ? 'en' : 'tr';
+        localStorage.setItem('lang', currentLang);
+        translatePage();
+        if (window.portfolioDataCache) {
+            renderData(window.portfolioDataCache);
+        }
+    });
+
+    translatePage(); // Sayfa yüklendiğinde çevir
+
     // 1. Verileri Ekrana Basan Fonksiyon
     function renderData(data) {
         if (!data) return;
+        window.portfolioDataCache = data;
 
-        // Profil
         if (data.profile) {
             $('#profileName').text(data.profile.name);
             $('#profileSurname').text(data.profile.surname);
             
-            if(data.profile.bio) {
+            // Sekme başlığını ve en alt kısmı dinamik güncelle
+            document.title = data.profile.name + ' ' + data.profile.surname + ' - ' + (currentLang === 'en' ? 'Portfolio' : 'Portfolyo');
+            $('#footerName').text(data.profile.name + ' ' + data.profile.surname);
+            
+            let bioText = currentLang === 'en' && data.profile.bio_en ? data.profile.bio_en : data.profile.bio;
+            if(bioText) {
                 // Alt satıra geçmeleri korumak için \n karakterlerini <br>'ye çeviriyoruz
-                $('#profileBio').html(data.profile.bio.replace(/\n/g, '<br>'));
+                $('#profileBio').html(bioText.replace(/\n/g, '<br>'));
             } else {
                 $('#profileBio').text('');
             }
@@ -77,15 +149,18 @@ $(document).ready(function() {
                         tagsHtml += `<span class="tag-badge">${tag}</span>`;
                     });
                 }
+                let titleText = currentLang === 'en' && project.title_en ? project.title_en : project.title;
+                let descText = currentLang === 'en' && project.description_en ? project.description_en : project.description;
+
                 projectsHtml += `
                     <div class="col-md-6" id="project-${index}">
                         <div class="project-card d-flex flex-column">
-                            <h5 class="project-title">${project.title}</h5>
-                            <p class="project-desc">${project.description}</p>
+                            <h5 class="project-title">${titleText}</h5>
+                            <p class="project-desc">${descText}</p>
                             <div class="mb-3">${tagsHtml}</div>
                             <div class="mt-auto">
                                 <a href="${project.link}" target="_blank" class="project-link">
-                                    Projeyi İncele <i class="fas fa-arrow-right"></i>
+                                    ${i18n[currentLang].view_project} <i class="fas fa-arrow-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -94,7 +169,7 @@ $(document).ready(function() {
             });
             $('#projectsContainer').html(projectsHtml);
         } else {
-            $('#projectsContainer').html('<p class="text-muted">Henüz proje eklenmedi.</p>');
+            $('#projectsContainer').html(`<p class="text-muted">${i18n[currentLang].no_projects}</p>`);
         }
 
         // Yetenekler
@@ -118,11 +193,22 @@ $(document).ready(function() {
                 if (levelText === 'İleri') badgeColor = 'bg-primary';
                 else if (levelText === 'Temel') badgeColor = 'bg-secondary';
 
+                let displayLevel = levelText;
+                if (currentLang === 'en') {
+                    if (levelText === 'Temel') displayLevel = i18n.en.skill_basic;
+                    if (levelText === 'Orta') displayLevel = i18n.en.skill_intermediate;
+                    if (levelText === 'İleri') displayLevel = i18n.en.skill_advanced;
+                } else {
+                    if (levelText === 'Temel') displayLevel = i18n.tr.skill_basic;
+                    if (levelText === 'Orta') displayLevel = i18n.tr.skill_intermediate;
+                    if (levelText === 'İleri') displayLevel = i18n.tr.skill_advanced;
+                }
+
                 skillsHtml += `
                     <div class="col-md-6 mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-bold">${skill.name}</span>
-                            <span class="badge ${badgeColor}">${levelText}</span>
+                            <span class="badge ${badgeColor}">${displayLevel}</span>
                         </div>
                         <div class="progress">
                             <div class="progress-bar" role="progressbar" style="width: ${percentValue}%" aria-valuenow="${percentValue}" aria-valuemin="0" aria-valuemax="100"></div>
@@ -132,25 +218,29 @@ $(document).ready(function() {
             });
             $('#skillsContainer').html(skillsHtml);
         } else {
-            $('#skillsContainer').html('<p class="text-muted">Henüz yetenek eklenmedi.</p>');
+            $('#skillsContainer').html(`<p class="text-muted">${i18n[currentLang].no_skills}</p>`);
         }
 
         // Zaman Çizelgesi
         if (data.timeline) {
             let timelineHtml = '';
             data.timeline.forEach(function(item) {
+                let titleText = currentLang === 'en' && item.title_en ? item.title_en : item.title;
+                let subtitleText = currentLang === 'en' && item.subtitle_en ? item.subtitle_en : item.subtitle;
+                let descText = currentLang === 'en' && item.description_en ? item.description_en : item.description;
+
                 timelineHtml += `
                     <div class="timeline-item">
                         <div class="timeline-date">${item.period}</div>
-                        <div class="timeline-title">${item.title}</div>
-                        <div class="timeline-subtitle">${item.subtitle}</div>
-                        ${item.description ? `<p class="small text-muted mb-0">${item.description}</p>` : ''}
+                        <div class="timeline-title">${titleText}</div>
+                        <div class="timeline-subtitle">${subtitleText}</div>
+                        ${descText ? `<p class="small text-muted mb-0">${descText}</p>` : ''}
                     </div>
                 `;
             });
             $('#timelineContainer').html(timelineHtml);
         } else {
-            $('#timelineContainer').html('<p class="text-muted">Henüz deneyim veya eğitim eklenmedi.</p>');
+            $('#timelineContainer').html(`<p class="text-muted">${i18n[currentLang].no_timeline}</p>`);
         }
     }
 
@@ -240,6 +330,7 @@ $(document).ready(function() {
                 }
                 
                 $('#editBio').val(profile.bio);
+                $('#editBioEn').val(profile.bio_en || '');
                 $('#editEmail').val(profile.email || '');
             }
             $('#editProfileModal').modal('show');
@@ -271,6 +362,7 @@ $(document).ready(function() {
                 surname: $('#editSurname').val(),
                 photoUrl: photoUrl || null,
                 bio: $('#editBio').val(),
+                bio_en: $('#editBioEn').val(),
                 email: $('#editEmail').val()
             };
 
@@ -360,7 +452,9 @@ $(document).ready(function() {
     // Proje Formu Ekleyen Fonksiyon
     function addProjectForm(proj) {
         const title = proj ? proj.title : '';
+        const title_en = proj && proj.title_en ? proj.title_en : '';
         const desc = proj ? proj.description : '';
+        const desc_en = proj && proj.description_en ? proj.description_en : '';
         const link = proj && proj.link !== '#' ? proj.link : '';
         
         const commonLangs = ["HTML", "CSS", "JavaScript", "TypeScript", "Python", "C#", "SQL", "Java", "C++", "PHP", "Swift", "Go", "Kotlin", "Ruby", "Rust", "Dart", "React", "Node.js", "Firebase", "MongoDB"];
@@ -382,13 +476,25 @@ $(document).ready(function() {
         const formHtml = `
             <div class="project-edit-item border rounded p-3 mb-3 position-relative bg-light shadow-sm">
                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-project-btn" title="Projeyi Sil"><i class="fas fa-trash"></i></button>
-                <div class="mb-2 pe-4">
-                    <label class="form-label small fw-bold mb-1">Proje Adı</label>
-                    <input type="text" class="form-control form-control-sm proj-title" value="${title}" placeholder="Örn: E-Ticaret Sitesi">
+                <div class="row mb-2 g-2">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold mb-1">Proje Adı (TR)</label>
+                        <input type="text" class="form-control form-control-sm proj-title" value="${title}" placeholder="Örn: E-Ticaret Sitesi">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold mb-1">Proje Adı (EN)</label>
+                        <input type="text" class="form-control form-control-sm proj-title-en" value="${title_en}" placeholder="e.g. E-Commerce Website">
+                    </div>
                 </div>
-                <div class="mb-2">
-                    <label class="form-label small fw-bold mb-1">Açıklama</label>
-                    <textarea class="form-control form-control-sm proj-desc" rows="2" placeholder="Proje detayları...">${desc}</textarea>
+                <div class="row mb-2 g-2">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold mb-1">Açıklama (TR)</label>
+                        <textarea class="form-control form-control-sm proj-desc" rows="2" placeholder="Proje detayları...">${desc}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold mb-1">Açıklama (EN)</label>
+                        <textarea class="form-control form-control-sm proj-desc-en" rows="2" placeholder="Project details...">${desc_en}</textarea>
+                    </div>
                 </div>
                 <div class="mb-2">
                     <label class="form-label small fw-bold mb-1">Kullanılan Teknolojiler / Diller</label>
@@ -421,7 +527,9 @@ $(document).ready(function() {
 
         $('.project-edit-item').each(function() {
             const title = $(this).find('.proj-title').val().trim();
+            const title_en = $(this).find('.proj-title-en').val().trim();
             const desc = $(this).find('.proj-desc').val().trim();
+            const desc_en = $(this).find('.proj-desc-en').val().trim();
             const link = $(this).find('.proj-link').val().trim();
             
             // Sadece başlığı olanları projeler listesine dahil et (Boşları geç)
@@ -433,7 +541,9 @@ $(document).ready(function() {
 
                 newProjects.push({
                     title: title,
+                    title_en: title_en,
                     description: desc,
+                    description_en: desc_en,
                     tags: selectedLangs,
                     link: link || '#'
                 });
@@ -559,30 +669,49 @@ $(document).ready(function() {
 
     function addTimelineForm(item) {
         const title = item ? item.title : '';
+        const title_en = item && item.title_en ? item.title_en : '';
         const subtitle = item ? item.subtitle : '';
+        const subtitle_en = item && item.subtitle_en ? item.subtitle_en : '';
         const period = item ? item.period : '';
         const desc = item ? item.description : '';
+        const desc_en = item && item.description_en ? item.description_en : '';
         
         const formHtml = `
             <div class="timeline-edit-item border rounded p-3 mb-3 position-relative bg-light">
                 <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-timeline-btn"><i class="fas fa-trash"></i></button>
-                <div class="mb-2 pe-4">
-                    <label class="form-label small fw-bold mb-1">Başlık / Pozisyon</label>
-                    <input type="text" class="form-control form-control-sm tl-title" value="${title}" placeholder="Örn: Frontend Developer">
-                </div>
-                <div class="row g-2 mb-2">
+                <div class="row g-2 mb-2 pe-4">
                     <div class="col-6">
-                        <label class="form-label small fw-bold mb-1">Kurum / Şirket</label>
-                        <input type="text" class="form-control form-control-sm tl-subtitle" value="${subtitle}" placeholder="Örn: Google">
+                        <label class="form-label small fw-bold mb-1">Başlık (TR)</label>
+                        <input type="text" class="form-control form-control-sm tl-title" value="${title}" placeholder="Örn: Frontend Geliştirici">
                     </div>
                     <div class="col-6">
+                        <label class="form-label small fw-bold mb-1">Başlık (EN)</label>
+                        <input type="text" class="form-control form-control-sm tl-title-en" value="${title_en}" placeholder="e.g. Frontend Developer">
+                    </div>
+                </div>
+                <div class="row g-2 mb-2">
+                    <div class="col-4">
+                        <label class="form-label small fw-bold mb-1">Kurum (TR)</label>
+                        <input type="text" class="form-control form-control-sm tl-subtitle" value="${subtitle}" placeholder="Örn: Teknoloji A.Ş.">
+                    </div>
+                    <div class="col-4">
+                        <label class="form-label small fw-bold mb-1">Kurum (EN)</label>
+                        <input type="text" class="form-control form-control-sm tl-subtitle-en" value="${subtitle_en}" placeholder="e.g. Technology Inc.">
+                    </div>
+                    <div class="col-4">
                         <label class="form-label small fw-bold mb-1">Tarih / Yıl</label>
                         <input type="text" class="form-control form-control-sm tl-period" value="${period}" placeholder="Örn: 2021 - Günümüz">
                     </div>
                 </div>
-                <div class="mb-2">
-                    <label class="form-label small fw-bold mb-1">Açıklama</label>
-                    <textarea class="form-control form-control-sm tl-desc" rows="2" placeholder="Görev detayları...">${desc}</textarea>
+                <div class="row g-2 mb-2">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold mb-1">Açıklama (TR)</label>
+                        <textarea class="form-control form-control-sm tl-desc" rows="2" placeholder="Görev detayları...">${desc}</textarea>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold mb-1">Açıklama (EN)</label>
+                        <textarea class="form-control form-control-sm tl-desc-en" rows="2" placeholder="Task details...">${desc_en}</textarea>
+                    </div>
                 </div>
             </div>
         `;
@@ -599,16 +728,22 @@ $(document).ready(function() {
 
         $('.timeline-edit-item').each(function() {
             const title = $(this).find('.tl-title').val().trim();
+            const title_en = $(this).find('.tl-title-en').val().trim();
             const subtitle = $(this).find('.tl-subtitle').val().trim();
+            const subtitle_en = $(this).find('.tl-subtitle-en').val().trim();
             const period = $(this).find('.tl-period').val().trim();
             const desc = $(this).find('.tl-desc').val().trim();
+            const desc_en = $(this).find('.tl-desc-en').val().trim();
             
             if (title !== '') {
                 newTimeline.push({
                     title: title,
+                    title_en: title_en,
                     subtitle: subtitle,
+                    subtitle_en: subtitle_en,
                     period: period,
-                    description: desc
+                    description: desc,
+                    description_en: desc_en
                 });
             }
         });
